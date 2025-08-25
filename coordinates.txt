@@ -1,0 +1,7 @@
+# 텍스트 컨트롤의 좌표 (x, y, width, height)
+# TextControl1
+100 50 200 25
+# TextControl2  
+150 100 250 30
+# TextControl3
+200 150 180 25
