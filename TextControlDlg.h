@@ -29,14 +29,17 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	// 좌표 구조체
-	struct TextControlCoords {
+	// C 언어 스타일 좌표 구조체
+	typedef struct {
 		int x, y, width, height;
-	};
+	} TextControlCoords;
 
-	// 멤버 함수
+	// C 언어 스타일 멤버 함수들
 	BOOL LoadCoordinatesFromFile(const CString& filename);
+	BOOL LoadCoordinatesFromFile_CStyle(const CString& filename);
+	BOOL LoadCoordinatesFromFile_BasicC(const CString& filename);
 	void UpdateTextControlPosition(int controlID, const TextControlCoords& coords);
+	void UpdateTextControlPosition_CStyle(int controlIndex, const TextControlCoords* coords);
 
 public:
 	// 컨트롤 변수

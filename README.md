@@ -1,14 +1,19 @@
-# MFC TextControl 좌표 변경 예제
+# MFC TextControl 좌표 변경 예제 (순수 C언어)
 
-이 프로젝트는 C언어와 MFC를 사용하여 파일에서 좌표를 읽어와서 텍스트 컨트롤의 위치를 동적으로 변경하는 방법을 보여주는 예제입니다.
+이 프로젝트는 **순수 C언어**와 MFC를 사용하여 파일에서 좌표를 읽어와서 텍스트 컨트롤의 위치를 동적으로 변경하는 방법을 보여주는 예제입니다.
 
 ## 파일 구성
 
+### MFC 통합 버전
 - `coordinates.txt`: 좌표 데이터가 저장된 텍스트 파일
-- `TextControlDlg.h`: MFC 다이얼로그 헤더 파일
-- `TextControlDlg.cpp`: 메인 구현 파일 (파일 읽기 및 컨트롤 위치 변경 로직)
+- `TextControlDlg.h`: MFC 다이얼로그 헤더 파일 (C언어 스타일로 수정됨)
+- `TextControlDlg.cpp`: C++ 스타일의 원본 구현 파일
+- `TextControlDlg_C_Style.cpp`: **순수 C언어 스타일**로 작성된 MFC 구현 파일
 - `resource.h`: 리소스 ID 정의
 - `TextControlApp.rc`: MFC 리소스 파일
+
+### 순수 C언어 독립 버전
+- `pure_c_example.c`: MFC 없이 **순수 C언어만**으로 작성된 파일 읽기 예제
 
 ## 주요 기능
 
@@ -32,21 +37,41 @@
 
 ## 핵심 함수
 
-### `LoadCoordinatesFromFile()`
-```cpp
-BOOL LoadCoordinatesFromFile(const CString& filename)
-```
-- 파일에서 좌표 데이터를 읽어오는 함수
-- std::ifstream을 사용한 C++ 스타일 파일 읽기
-- 주석 라인과 빈 라인을 자동으로 건너뛰기
+### C언어 스타일 MFC 버전
 
-### `UpdateTextControlPosition()`
-```cpp
-void UpdateTextControlPosition(int controlID, const TextControlCoords& coords)
+#### `LoadCoordinatesFromFile_CStyle()`
+```c
+BOOL LoadCoordinatesFromFile_CStyle(const CString& filename)
 ```
-- 특정 컨트롤의 위치와 크기를 업데이트하는 함수
+- **순수 C언어 스타일**로 작성된 파일 읽기 함수
+- `fopen_s()`, `fgets()`, `sscanf_s()` 사용
+- `strtok_s()`를 이용한 대안적 파싱 방법 제공
+
+#### `UpdateTextControlPosition_CStyle()`
+```c
+void UpdateTextControlPosition_CStyle(int controlIndex, const TextControlCoords* coords)
+```
+- C언어 스타일 포인터 사용
+- 구조체 포인터를 통한 데이터 접근
 - SetWindowPos()를 사용하여 컨트롤 위치 변경
-- 변경 후 화면 갱신
+
+### 순수 C언어 독립 버전
+
+#### `load_coordinates_from_file()`
+```c
+int load_coordinates_from_file(const char* filename, Coordinates coords[], int max_count)
+```
+- MFC 없이 순수 C언어로만 작성
+- `fopen()`, `fgets()`, `sscanf()` 사용
+- 파싱 실패 시 `strtok_r()` 대안 제공
+
+#### `parse_coordinate_line_manual()`
+```c
+int parse_coordinate_line_manual(const char* line, Coordinates* coord)
+```
+- 라이브러리 함수 없이 수동 파싱
+- 문자열 포인터 직접 조작
+- 완전히 독립적인 C언어 구현
 
 ## 컴파일 및 실행
 
@@ -58,7 +83,32 @@ void UpdateTextControlPosition(int controlID, const TextControlCoords& coords)
 
 ## 기술적 특징
 
+### MFC 버전
 - **MFC 다이얼로그 기반**: Windows MFC 프레임워크 사용
-- **파일 I/O**: C++ 표준 라이브러리의 ifstream 사용
+- **순수 C언어 파일 I/O**: `fopen_s()`, `fgets()`, `sscanf_s()` 사용
+- **C언어 스타일 문자열 처리**: `strtok_s()`, 포인터 직접 조작
 - **동적 UI 변경**: 런타임에 컨트롤 위치 변경
-- **에러 처리**: 파일 읽기 실패 시 사용자에게 알림
+- **구조체 포인터**: C언어 스타일 데이터 구조 사용
+
+### 순수 C언어 버전
+- **완전한 C언어**: MFC나 C++ 기능 없이 순수 C언어만 사용
+- **표준 C 라이브러리**: `stdio.h`, `stdlib.h`, `string.h`만 사용
+- **수동 메모리 관리**: `malloc()`, `free()` 사용
+- **다양한 파싱 방법**: `sscanf()`, `strtok_r()`, 수동 파싱 제공
+- **크로스 플랫폼**: Unix/Linux에서도 컴파일 가능
+
+## C언어 파일 I/O 특징
+
+### 사용된 C언어 함수들
+```c
+FILE* fopen_s(&file, filename, "r");  // 안전한 파일 열기
+fgets(line, sizeof(line), file);      // 한 줄씩 읽기
+sscanf_s(line, "%d %d %d %d", ...);   // 안전한 문자열 파싱
+strtok_s(line, " \t", &context);      // 안전한 토큰 분리
+fclose(file);                         // 파일 닫기
+```
+
+### 메모리 안전성
+- **버퍼 오버플로우 방지**: `fgets()`, `sscanf_s()` 사용
+- **안전한 문자열 함수**: `strtok_s()` 사용
+- **NULL 포인터 검사**: 모든 포인터 사용 전 검증
