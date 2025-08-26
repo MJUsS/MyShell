@@ -1,72 +1,64 @@
-# MFC 텍스트 컨트롤 위치 변경 예제
+# MFC TextControl 좌표 변경 예제
 
-이 프로젝트는 C언어 파일 입출력을 사용하여 좌표 파일에서 좌표를 읽어와서 MFC 다이얼로그의 텍스트 컨트롤 위치를 동적으로 변경하는 예제입니다.
+이 프로젝트는 C언어와 MFC를 사용하여 파일에서 좌표를 읽어와서 텍스트 컨트롤의 위치를 동적으로 변경하는 방법을 보여주는 예제입니다.
 
 ## 파일 구성
 
-1. **coordinates.txt** - 텍스트 컨트롤의 좌표 데이터 파일
-2. **TextControlDlg.h** - MFC 다이얼로그 헤더 파일
-3. **TextControlDlg.cpp** - MFC 다이얼로그 구현 파일
-4. **resource.h** - 리소스 ID 정의
-5. **TextControlDlg.rc** - 리소스 스크립트 파일
+- `coordinates.txt`: 좌표 데이터가 저장된 텍스트 파일
+- `TextControlDlg.h`: MFC 다이얼로그 헤더 파일
+- `TextControlDlg.cpp`: 메인 구현 파일 (파일 읽기 및 컨트롤 위치 변경 로직)
+- `resource.h`: 리소스 ID 정의
+- `TextControlApp.rc`: MFC 리소스 파일
 
 ## 주요 기능
 
-### 1. 좌표 파일 형식
+1. **파일에서 좌표 읽기**: `coordinates.txt` 파일에서 x, y, width, height 값을 읽어옵니다.
+2. **동적 위치 변경**: 읽어온 좌표를 사용하여 TextControl의 위치와 크기를 실시간으로 변경합니다.
+3. **사용자 인터페이스**: 파일 선택 다이얼로그를 통해 좌표 파일을 선택할 수 있습니다.
+
+## 좌표 파일 형식
+
 ```
-# 텍스트 컨트롤의 좌표 (x, y, width, height)
-# TextControl1
+# 좌표 파일 형식: x y width height
+# TextControl의 위치와 크기 정보
 100 50 200 25
-# TextControl2  
-150 100 250 30
-# TextControl3
-200 150 180 25
+150 100 180 30
+200 150 160 20
 ```
 
-### 2. 핵심 함수들
+- 각 줄은 하나의 TextControl에 대한 좌표를 나타냅니다.
+- 순서대로 x좌표, y좌표, 너비, 높이를 의미합니다.
+- `#`으로 시작하는 줄은 주석으로 처리됩니다.
 
-- **LoadCoordinatesFromFile()**: C언어 스타일 파일 읽기 함수
-- **MoveTextControl()**: 텍스트 컨트롤 위치 변경 함수
-- **OnBnClickedLoadCoordinates()**: 좌표 파일 로드 버튼 이벤트 핸들러
-- **OnBnClickedResetPositions()**: 위치 리셋 버튼 이벤트 핸들러
+## 핵심 함수
 
-### 3. C언어 파일 입출력 특징
-
+### `LoadCoordinatesFromFile()`
 ```cpp
-// 순수 C 스타일 파일 읽기
-FILE* file = nullptr;
-errno_t err = _tfopen_s(&file, filePath, _T("r"));
-
-char line[256];
-while (fgets(line, sizeof(line), file) && coordIndex < 3)
-{
-    // 좌표 파싱
-    int x, y, width, height;
-    if (sscanf_s(line, "%d %d %d %d", &x, &y, &width, &height) == 4)
-    {
-        // 좌표 저장
-    }
-}
+BOOL LoadCoordinatesFromFile(const CString& filename)
 ```
+- 파일에서 좌표 데이터를 읽어오는 함수
+- std::ifstream을 사용한 C++ 스타일 파일 읽기
+- 주석 라인과 빈 라인을 자동으로 건너뛰기
 
-## 사용 방법
+### `UpdateTextControlPosition()`
+```cpp
+void UpdateTextControlPosition(int controlID, const TextControlCoords& coords)
+```
+- 특정 컨트롤의 위치와 크기를 업데이트하는 함수
+- SetWindowPos()를 사용하여 컨트롤 위치 변경
+- 변경 후 화면 갱신
 
-1. MFC 프로젝트에 파일들을 추가
-2. 리소스 파일에서 다이얼로그와 컨트롤 ID 설정
-3. coordinates.txt 파일에 원하는 좌표 입력
-4. "좌표 파일 로드" 버튼으로 좌표 적용
-5. "위치 리셋" 버튼으로 원래 위치 복원
+## 컴파일 및 실행
 
-## 컴파일 요구사항
+1. Visual Studio에서 MFC 프로젝트를 생성합니다.
+2. 제공된 파일들을 프로젝트에 추가합니다.
+3. 프로젝트를 빌드하고 실행합니다.
+4. "좌표 파일 로드" 버튼을 클릭하여 coordinates.txt 파일을 선택합니다.
+5. 텍스트 컨트롤들의 위치가 파일에 정의된 좌표로 변경되는 것을 확인합니다.
 
-- Visual Studio with MFC
-- Windows SDK
-- C++/CLI 또는 C++ 표준 라이브러리
+## 기술적 특징
 
-## 특징
-
-- **순수 C 스타일 파일 입출력** 사용
-- **동적 컨트롤 위치 변경** 지원
-- **오류 처리** 및 **사용자 피드백** 제공
-- **원본 위치 복원** 기능
-- **주석이 있는 좌표 파일** 지원
+- **MFC 다이얼로그 기반**: Windows MFC 프레임워크 사용
+- **파일 I/O**: C++ 표준 라이브러리의 ifstream 사용
+- **동적 UI 변경**: 런타임에 컨트롤 위치 변경
+- **에러 처리**: 파일 읽기 실패 시 사용자에게 알림

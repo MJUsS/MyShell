@@ -1,52 +1,47 @@
 #pragma once
-#include "afxdialogex.h"
 
 // CTextControlDlg 대화 상자
 
 class CTextControlDlg : public CDialogEx
 {
-    DECLARE_DYNAMIC(CTextControlDlg)
-
+// 생성입니다.
 public:
-    CTextControlDlg(CWnd* pParent = nullptr);   // 표준 생성자입니다.
-    virtual ~CTextControlDlg();
+	CTextControlDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
 
 // 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
-    enum { IDD = IDD_TEXTCONTROL_DIALOG };
+	enum { IDD = IDD_TEXTCONTROL_DIALOG };
 #endif
 
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
+	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
 
-    DECLARE_MESSAGE_MAP()
+// 구현입니다.
+protected:
+	HICON m_hIcon;
 
-public:
-    // 텍스트 컨트롤 변수들
-    CStatic m_textControl1;
-    CStatic m_textControl2;
-    CStatic m_textControl3;
-
-    // 함수들
-    virtual BOOL OnInitDialog();
-    afx_msg void OnBnClickedLoadCoordinates();
-    afx_msg void OnBnClickedResetPositions();
+	// 생성된 메시지 맵 함수
+	virtual BOOL OnInitDialog();
+	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+	afx_msg void OnPaint();
+	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg void OnBnClickedLoadCoordinates();
+	DECLARE_MESSAGE_MAP()
 
 private:
-    // 좌표 구조체
-    struct Coordinates {
-        int x, y, width, height;
-    };
+	// 좌표 구조체
+	struct TextControlCoords {
+		int x, y, width, height;
+	};
 
-    // 파일에서 좌표를 읽는 함수
-    BOOL LoadCoordinatesFromFile(const CString& filePath);
-    
-    // 텍스트 컨트롤의 위치를 변경하는 함수
-    void MoveTextControl(CWnd* pControl, const Coordinates& coords);
-    
-    // 좌표 배열
-    Coordinates m_coordinates[3];
-    
-    // 원본 좌표 저장 (리셋용)
-    Coordinates m_originalCoords[3];
+	// 멤버 함수
+	BOOL LoadCoordinatesFromFile(const CString& filename);
+	void UpdateTextControlPosition(int controlID, const TextControlCoords& coords);
+
+public:
+	// 컨트롤 변수
+	CStatic m_textControl1;
+	CStatic m_textControl2;
+	CStatic m_textControl3;
+	CButton m_btnLoadCoords;
 };

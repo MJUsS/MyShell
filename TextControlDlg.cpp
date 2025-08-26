@@ -1,214 +1,248 @@
 #include "pch.h"
+#include "framework.h"
 #include "TextControlDlg.h"
 #include "afxdialogex.h"
 #include <fstream>
 #include <sstream>
 
-// CTextControlDlg 대화 상자
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
-IMPLEMENT_DYNAMIC(CTextControlDlg, CDialogEx)
+// 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
-CTextControlDlg::CTextControlDlg(CWnd* pParent /*=nullptr*/)
-    : CDialogEx(IDD_TEXTCONTROL_DIALOG, pParent)
+class CAboutDlg : public CDialogEx
 {
-    // 좌표 초기화
-    memset(m_coordinates, 0, sizeof(m_coordinates));
-    memset(m_originalCoords, 0, sizeof(m_originalCoords));
+public:
+	CAboutDlg();
+
+// 대화 상자 데이터입니다.
+#ifdef AFX_DESIGN_TIME
+	enum { IDD = IDD_ABOUTBOX };
+#endif
+
+	protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 지원입니다.
+
+// 구현입니다.
+protected:
+	DECLARE_MESSAGE_MAP()
+};
+
+CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
+{
 }
 
-CTextControlDlg::~CTextControlDlg()
+void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
+	CDialogEx::DoDataExchange(pDX);
+}
+
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+END_MESSAGE_MAP()
+
+
+// CTextControlDlg 대화 상자
+
+CTextControlDlg::CTextControlDlg(CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_TEXTCONTROL_DIALOG, pParent)
+{
+	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
 void CTextControlDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialogEx::DoDataExchange(pDX);
-    DDX_Control(pDX, IDC_TEXT_CONTROL1, m_textControl1);
-    DDX_Control(pDX, IDC_TEXT_CONTROL2, m_textControl2);
-    DDX_Control(pDX, IDC_TEXT_CONTROL3, m_textControl3);
+	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_TEXT_CONTROL1, m_textControl1);
+	DDX_Control(pDX, IDC_TEXT_CONTROL2, m_textControl2);
+	DDX_Control(pDX, IDC_TEXT_CONTROL3, m_textControl3);
+	DDX_Control(pDX, IDC_BTN_LOAD_COORDS, m_btnLoadCoords);
 }
 
 BEGIN_MESSAGE_MAP(CTextControlDlg, CDialogEx)
-    ON_BN_CLICKED(IDC_LOAD_COORDINATES, &CTextControlDlg::OnBnClickedLoadCoordinates)
-    ON_BN_CLICKED(IDC_RESET_POSITIONS, &CTextControlDlg::OnBnClickedResetPositions)
+	ON_WM_SYSCOMMAND()
+	ON_WM_PAINT()
+	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BTN_LOAD_COORDS, &CTextControlDlg::OnBnClickedLoadCoordinates)
 END_MESSAGE_MAP()
+
 
 // CTextControlDlg 메시지 처리기
 
 BOOL CTextControlDlg::OnInitDialog()
 {
-    CDialogEx::OnInitDialog();
+	CDialogEx::OnInitDialog();
 
-    // 원본 좌표 저장
-    CRect rect;
-    
-    if (m_textControl1.GetSafeHwnd())
-    {
-        m_textControl1.GetWindowRect(&rect);
-        ScreenToClient(&rect);
-        m_originalCoords[0] = {rect.left, rect.top, rect.Width(), rect.Height()};
-    }
-    
-    if (m_textControl2.GetSafeHwnd())
-    {
-        m_textControl2.GetWindowRect(&rect);
-        ScreenToClient(&rect);
-        m_originalCoords[1] = {rect.left, rect.top, rect.Width(), rect.Height()};
-    }
-    
-    if (m_textControl3.GetSafeHwnd())
-    {
-        m_textControl3.GetWindowRect(&rect);
-        ScreenToClient(&rect);
-        m_originalCoords[2] = {rect.left, rect.top, rect.Width(), rect.Height()};
-    }
+	// 시스템 메뉴에 "정보..." 메뉴 항목을 추가합니다.
 
-    // 텍스트 컨트롤에 초기 텍스트 설정
-    m_textControl1.SetWindowText(_T("텍스트 컨트롤 1"));
-    m_textControl2.SetWindowText(_T("텍스트 컨트롤 2"));
-    m_textControl3.SetWindowText(_T("텍스트 컨트롤 3"));
+	// IDM_ABOUTBOX는 시스템 명령 범위에 있어야 합니다.
+	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+	ASSERT(IDM_ABOUTBOX < 0xF000);
 
-    return TRUE;
+	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	if (pSysMenu != nullptr)
+	{
+		BOOL bNameValid;
+		CString strAboutMenu;
+		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
+		ASSERT(bNameValid);
+		if (!strAboutMenu.IsEmpty())
+		{
+			pSysMenu->AppendMenu(MF_SEPARATOR);
+			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
+		}
+	}
+
+	// 이 대화 상자의 아이콘을 설정합니다.  응용 프로그램의 주 창이 대화 상자가 아닐 경우에는
+	//  프레임워크가 이 작업을 자동으로 수행합니다.
+	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
+	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
+
+	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	
+	// 텍스트 컨트롤에 초기 텍스트 설정
+	m_textControl1.SetWindowText(_T("Text Control 1"));
+	m_textControl2.SetWindowText(_T("Text Control 2"));
+	m_textControl3.SetWindowText(_T("Text Control 3"));
+
+	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
+void CTextControlDlg::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
+	{
+		CAboutDlg dlgAbout;
+		dlgAbout.DoModal();
+	}
+	else
+	{
+		CDialogEx::OnSysCommand(nID, lParam);
+	}
+}
+
+// 대화 상자에 최소화 단추를 추가할 경우 아이콘을 그리려면
+//  아래 코드가 필요합니다.  문서/뷰 모델을 사용하는 MFC 응용 프로그램의 경우에는
+//  프레임워크에서 이 작업을 자동으로 수행합니다.
+
+void CTextControlDlg::OnPaint()
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // 그리기를 위한 디바이스 컨텍스트입니다.
+
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+
+		// 클라이언트 사각형에서 아이콘을 가운데에 맞춥니다.
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// 아이콘을 그립니다.
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialogEx::OnPaint();
+	}
+}
+
+// 사용자가 최소화된 창을 끄는 동안에 커서가 표시되도록 시스템에서
+//  이 함수를 호출합니다.
+HCURSOR CTextControlDlg::OnQueryDragIcon()
+{
+	return static_cast<HCURSOR>(m_hIcon);
+}
+
+// 좌표 로드 버튼 클릭 이벤트 핸들러
 void CTextControlDlg::OnBnClickedLoadCoordinates()
 {
-    // 파일 선택 대화상자
-    CFileDialog dlg(TRUE, _T("txt"), _T("coordinates.txt"),
-        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-        _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+	// 파일 선택 대화상자
+	CFileDialog fileDlg(TRUE, _T("txt"), NULL, 
+		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+		_T("텍스트 파일 (*.txt)|*.txt|모든 파일 (*.*)|*.*||"));
 
-    if (dlg.DoModal() == IDOK)
-    {
-        CString filePath = dlg.GetPathName();
-        
-        if (LoadCoordinatesFromFile(filePath))
-        {
-            // 텍스트 컨트롤들의 위치 변경
-            MoveTextControl(&m_textControl1, m_coordinates[0]);
-            MoveTextControl(&m_textControl2, m_coordinates[1]);
-            MoveTextControl(&m_textControl3, m_coordinates[2]);
-            
-            // 화면 갱신
-            Invalidate();
-            
-            MessageBox(_T("좌표를 성공적으로 로드하여 적용했습니다."), _T("성공"), MB_OK | MB_ICONINFORMATION);
-        }
-        else
-        {
-            MessageBox(_T("좌표 파일을 읽는데 실패했습니다."), _T("오류"), MB_OK | MB_ICONERROR);
-        }
-    }
+	if (fileDlg.DoModal() == IDOK)
+	{
+		CString filePath = fileDlg.GetPathName();
+		if (LoadCoordinatesFromFile(filePath))
+		{
+			MessageBox(_T("좌표가 성공적으로 로드되었습니다."), _T("성공"), MB_OK | MB_ICONINFORMATION);
+		}
+		else
+		{
+			MessageBox(_T("좌표 파일을 읽는데 실패했습니다."), _T("오류"), MB_OK | MB_ICONERROR);
+		}
+	}
 }
 
-void CTextControlDlg::OnBnClickedResetPositions()
+// 파일에서 좌표를 읽어오는 함수
+BOOL CTextControlDlg::LoadCoordinatesFromFile(const CString& filename)
 {
-    // 원본 위치로 복원
-    MoveTextControl(&m_textControl1, m_originalCoords[0]);
-    MoveTextControl(&m_textControl2, m_originalCoords[1]);
-    MoveTextControl(&m_textControl3, m_originalCoords[2]);
-    
-    // 화면 갱신
-    Invalidate();
-    
-    MessageBox(_T("텍스트 컨트롤들을 원래 위치로 복원했습니다."), _T("복원 완료"), MB_OK | MB_ICONINFORMATION);
+	std::ifstream file;
+	file.open(CStringA(filename));
+
+	if (!file.is_open())
+	{
+		return FALSE;
+	}
+
+	std::string line;
+	int controlIndex = 0;
+	
+	// 파일에서 한 줄씩 읽기
+	while (std::getline(file, line) && controlIndex < 3)
+	{
+		// 주석 라인이나 빈 라인 건너뛰기
+		if (line.empty() || line[0] == '#')
+		{
+			continue;
+		}
+
+		// 좌표 파싱
+		std::istringstream iss(line);
+		TextControlCoords coords;
+		
+		if (iss >> coords.x >> coords.y >> coords.width >> coords.height)
+		{
+			// 각 텍스트 컨트롤의 위치 업데이트
+			switch (controlIndex)
+			{
+			case 0:
+				UpdateTextControlPosition(IDC_TEXT_CONTROL1, coords);
+				break;
+			case 1:
+				UpdateTextControlPosition(IDC_TEXT_CONTROL2, coords);
+				break;
+			case 2:
+				UpdateTextControlPosition(IDC_TEXT_CONTROL3, coords);
+				break;
+			}
+			controlIndex++;
+		}
+	}
+
+	file.close();
+	return (controlIndex > 0); // 최소 하나의 좌표는 로드되어야 함
 }
 
-BOOL CTextControlDlg::LoadCoordinatesFromFile(const CString& filePath)
+// 텍스트 컨트롤의 위치를 업데이트하는 함수
+void CTextControlDlg::UpdateTextControlPosition(int controlID, const TextControlCoords& coords)
 {
-    // C 스타일 파일 읽기 (C언어 스타일)
-    FILE* file = nullptr;
-    errno_t err = _tfopen_s(&file, filePath, _T("r"));
-    
-    if (err != 0 || file == nullptr)
-    {
-        return FALSE;
-    }
+	CWnd* pControl = GetDlgItem(controlID);
+	if (pControl != nullptr)
+	{
+		// 컨트롤의 위치와 크기 변경
+		pControl->SetWindowPos(nullptr, 
+			coords.x, coords.y, 
+			coords.width, coords.height,
+			SWP_NOZORDER | SWP_SHOWWINDOW);
 
-    char line[256];
-    int coordIndex = 0;
-    
-    while (fgets(line, sizeof(line), file) && coordIndex < 3)
-    {
-        // 주석 라인이나 빈 라인 건너뛰기
-        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
-            continue;
-            
-        // 좌표 파싱 (x, y, width, height)
-        int x, y, width, height;
-        if (sscanf_s(line, "%d %d %d %d", &x, &y, &width, &height) == 4)
-        {
-            m_coordinates[coordIndex].x = x;
-            m_coordinates[coordIndex].y = y;
-            m_coordinates[coordIndex].width = width;
-            m_coordinates[coordIndex].height = height;
-            coordIndex++;
-        }
-    }
-    
-    fclose(file);
-    
-    // 3개의 좌표를 모두 읽었는지 확인
-    return (coordIndex == 3);
+		// 다이얼로그 새로 그리기
+		Invalidate();
+		UpdateWindow();
+	}
 }
-
-void CTextControlDlg::MoveTextControl(CWnd* pControl, const Coordinates& coords)
-{
-    if (pControl && pControl->GetSafeHwnd())
-    {
-        // 컨트롤의 위치와 크기 변경
-        pControl->MoveWindow(coords.x, coords.y, coords.width, coords.height, TRUE);
-    }
-}
-
-// 대안적인 파일 읽기 방법 (더 순수한 C 스타일)
-/*
-BOOL CTextControlDlg::LoadCoordinatesFromFile_CStyle(const CString& filePath)
-{
-    // CString을 char*로 변환
-    CT2A converter(filePath);
-    char* fileName = converter;
-    
-    FILE* file = fopen(fileName, "r");
-    if (file == NULL)
-    {
-        return FALSE;
-    }
-
-    int coordIndex = 0;
-    char buffer[256];
-    
-    while (fgets(buffer, sizeof(buffer), file) != NULL && coordIndex < 3)
-    {
-        // 주석이나 빈 줄 건너뛰기
-        if (buffer[0] == '#' || buffer[0] == '\n')
-            continue;
-            
-        // strtok을 사용한 파싱
-        char* token = strtok(buffer, " \t\n");
-        if (token == NULL) continue;
-        
-        int values[4];
-        int valueIndex = 0;
-        
-        while (token != NULL && valueIndex < 4)
-        {
-            values[valueIndex] = atoi(token);
-            valueIndex++;
-            token = strtok(NULL, " \t\n");
-        }
-        
-        if (valueIndex == 4)
-        {
-            m_coordinates[coordIndex].x = values[0];
-            m_coordinates[coordIndex].y = values[1];
-            m_coordinates[coordIndex].width = values[2];
-            m_coordinates[coordIndex].height = values[3];
-            coordIndex++;
-        }
-    }
-    
-    fclose(file);
-    return (coordIndex == 3);
-}
-*/
